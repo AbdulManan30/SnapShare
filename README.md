@@ -57,7 +57,7 @@ python app.py
 ```
 
 Then open your browser at:
-👉 [<a>Click After That: </a>](http://localhost:5000)
+<a href="http://localhost:5000" target="_blank" rel="noopener noreferrer">http://localhost:5000</a>
 
 ---
 
@@ -69,3 +69,6 @@ Flask
 python-nmap (optional, for scanning)
 nmap installed on your system (for local use)
 ```
+---
+🙋‍♂️ Author
+Abdul Manan
