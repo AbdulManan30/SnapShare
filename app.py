@@ -6,10 +6,8 @@ app = Flask(__name__)
 shared_text = ""
 
 def scan_devices():
-    # If running on Render.com, disable scanning
-    if os.environ.get("RENDER"):
-        return [{"ip": "N/A", "hostname": "Not supported on Render"}]
-
+    if os.environ.get("DISABLE_SCAN") == "true":
+        return [{"ip": "N/A", "hostname": "Device scanning disabled"}]
     try:
         cmd = ["nmap", "-sn", "192.168.18.0/24"]
         if platform.system() != "Windows":
