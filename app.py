@@ -6,14 +6,21 @@ app = Flask(__name__)
 shared_text = ""
 
 def scan_devices():
+    # If running on Render.com, disable scanning
+    if os.environ.get("RENDER"):
+        return [{"ip": "N/A", "hostname": "Not supported on Render"}]
+
     try:
         cmd = ["nmap", "-sn", "192.168.18.0/24"]
         if platform.system() != "Windows":
             cmd.insert(0, "sudo")
+
         result = subprocess.run(cmd, capture_output=True, text=True)
         output = result.stdout
+
         devices = []
         current_ip, hostname = None, "Unknown"
+
         for line in output.splitlines():
             if line.startswith("Nmap scan report for"):
                 parts = line.split()
@@ -23,12 +30,14 @@ def scan_devices():
                 elif len(parts) == 6:
                     hostname = parts[4]
                     current_ip = parts[5].strip("()")
+
             if "Host is up" in line and current_ip:
                 devices.append({"ip": current_ip, "hostname": hostname})
+
         return devices
+
     except Exception as e:
         return [{"ip": "Error", "hostname": str(e)}]
-
 @app.route("/", methods=["GET", "POST"])
 def index():
     global shared_text
@@ -64,4 +73,5 @@ def download(filename):
     )
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
