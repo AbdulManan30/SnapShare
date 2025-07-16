@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SnapShare – Devices</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: sans-serif; background: #eef2f3; padding: 30px; max-width: 800px; margin: auto; color: #333; }
+        h1, h2 { text-align: center; color: #2d3436; }
+        form { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+        input[type="text"], input[type="file"] {
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .styled-input {
+    padding: 14px 20px;
+    font-size: 16px;
+    background: #fff;
+    border: 2px solid #dfe6e9;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.styled-input:focus {
+    border-color: #6c5ce7;
+    box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.2);
+}
+        button {
+            padding: 12px;
+            font-size: 16px;
+            background: #00b894;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover { background: #019875; }
+        .text-box, .file-box {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+        th { background: #6c5ce7; color: white; }
+        tr:hover { background: #f1f1f1; }
+        footer { margin-top: 40px; text-align: center; color: #888; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <h1>📡 SnapShare</h1>
+    <h2>Share Text & Files on Local WiFi</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        <input name="text" value="{{ text }}" placeholder="Type your shared message..." class="styled-input" />
+        {% if not filename %}
+        <input type="file" name="file" />
+        {% endif %}
+        <button type="submit">Submit</button>
+    </form>
+
+    <div class="text-box">
+        <strong>Current Shared Text:</strong>
+        <p>
+            {% if text == "" %}
+                <i>There is no message yet.</i>
+            {% else %}
+                <b>Writed Text:</b> {{ text }}
+            {% endif %}
+        </p>
+    </div>
+
+    {% if filename %}
+    <div class="file-box">
+        <strong>Shared File:</strong>
+        <form action="/download/{{ filename }}" method="get">
+            <p>{{ filename }}</p>
+            <button type="submit">📥 Download File</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <h2>Connected Devices</h2>
+    <table>
+        <thead>
+            <tr><th>IP Address</th><th>Device Name</th></tr>
+        </thead>
+        <tbody>
+            {% for device in devices %}
+            <tr><td>{{ device.ip }}</td><td>{{ device.hostname }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <footer>🌐 Devices detected using Nmap</footer>
+</body>
+</html>

@@ -1,10 +1,6 @@
-from flask import Flask, request, render_template_string, send_file, redirect, url_for
-import subprocess
-import platform
-from file_feature import handle_file_upload, get_latest_uploaded_file
-from htmlCode import HTML_TEMPLATE
-import os
-import io
+from flask import Flask, request, render_template, send_file, redirect, url_for
+import subprocess, platform, os, io
+from file_feature import handle_file_upload, get_latest_uploaded_file, delete_all_files
 
 app = Flask(__name__)
 shared_text = ""
@@ -14,13 +10,10 @@ def scan_devices():
         cmd = ["nmap", "-sn", "192.168.18.0/24"]
         if platform.system() != "Windows":
             cmd.insert(0, "sudo")
-
         result = subprocess.run(cmd, capture_output=True, text=True)
         output = result.stdout
         devices = []
-        current_ip = None
-        hostname = "Unknown"
-
+        current_ip, hostname = None, "Unknown"
         for line in output.splitlines():
             if line.startswith("Nmap scan report for"):
                 parts = line.split()
@@ -32,7 +25,6 @@ def scan_devices():
                     current_ip = parts[5].strip("()")
             if "Host is up" in line and current_ip:
                 devices.append({"ip": current_ip, "hostname": hostname})
-
         return devices
     except Exception as e:
         return [{"ip": "Error", "hostname": str(e)}]
@@ -40,49 +32,36 @@ def scan_devices():
 @app.route("/", methods=["GET", "POST"])
 def index():
     global shared_text
+    filename = ""
 
     if request.method == "POST":
         shared_text = request.form.get("text", "")
-        filename = handle_file_upload()
-        devices = scan_devices()
-        return render_template_string(HTML_TEMPLATE(), text=shared_text, devices=devices, filename=filename)
+        filename = handle_file_upload(request)
 
-    # Check latest file
     filename = get_latest_uploaded_file()
-    file_path = os.path.join("uploads", filename)
-
-    # Clear filename if file doesn't exist (was deleted)
-    if not os.path.exists(file_path):
+    if not os.path.exists(os.path.join("uploads", filename)):
         filename = ""
 
     devices = scan_devices()
-    return render_template_string(HTML_TEMPLATE(), text=shared_text, devices=devices, filename=filename)
-
+    return render_template("index.html", text=shared_text, devices=devices, filename=filename)
 
 @app.route("/download/<filename>")
 def download(filename):
     file_path = os.path.join("uploads", filename)
-
     if not os.path.isfile(file_path):
         return redirect(url_for("index"))
 
-    # Read file into memory
     with open(file_path, "rb") as f:
         file_data = f.read()
 
-    # Delete all files in uploads folder
-    for f in os.listdir("uploads"):
-        try:
-            os.remove(os.path.join("uploads", f))
-        except:
-            pass
+    delete_all_files()
 
-    # Send file from memory
     return send_file(
         io.BytesIO(file_data),
         as_attachment=True,
         download_name=filename,
         mimetype="application/octet-stream"
     )
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
