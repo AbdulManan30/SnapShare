@@ -70,5 +70,5 @@ python-nmap (optional, for scanning)
 nmap installed on your system (for local use)
 ```
 ---
-🙋‍♂️ Author
-Abdul Manan
+## 🙋‍♂️ Author
+<b>Abdul Manan</b>
